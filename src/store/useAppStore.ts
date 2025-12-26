@@ -1,5 +1,29 @@
 import { create } from 'zustand';
 
+export interface UserPreferences {
+  // Attention & Focus
+  focusSessionLength: string;
+  breakLength: string;
+  focusBreakers: string[];
+  
+  // Content Format Preference
+  preferredOutput: string;
+  detailLevel: string;
+  
+  // Sensory Comfort
+  colorTheme: string;
+  audioSpeed: string;
+  videoSpeed: string;
+  
+  // Learning Rhythm
+  sessionStyle: string;
+  progressTracking: string;
+  
+  // Self-Awareness
+  energyLevel: string;
+  scrollSpeed: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -8,6 +32,7 @@ export interface User {
   studyGoal?: string;
   dailyGoalMinutes?: number;
   preferredSubjects?: string[];
+  preferences?: UserPreferences;
 }
 
 export interface StudyStreak {
