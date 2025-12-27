@@ -2,7 +2,7 @@ import { FileText, Video, Play, Pause, Download, Trash2, Loader2, CheckCircle } 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAppStore, StudyContent } from "@/store/useAppStore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate }  from "react-router-dom";
 
 interface ContentCardProps {
   content: StudyContent;
