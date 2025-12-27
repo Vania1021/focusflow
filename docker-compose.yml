@@ -1,0 +1,19 @@
+services:
+  neurosync-server:
+    build: ./apps/web/server
+    container_name: neurosync-server
+    ports: ["3001:3001"]
+    env_file: ./apps/web/server/.env
+    # Volumes allow instant code updates without rebuilding
+    volumes:
+      - ./apps/web/server:/app
+      - /app/node_modules # Prevents local node_modules from overwriting container's
+
+  neurosync-client:
+    build: ./apps/web/client
+    container_name: neurosync-client
+    ports: ["3000:3000"]
+    depends_on: [neurosync-server]
+    volumes:
+      - ./apps/web/client:/app
+      - /app/node_modules
