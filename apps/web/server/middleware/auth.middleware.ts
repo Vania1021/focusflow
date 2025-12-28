@@ -3,28 +3,32 @@ import { NextFunction, Request, Response } from "express";
 import { UserContainer } from "../lib/db.config";
 
 export const protectRoute = async (req: Request, res: Response, next: NextFunction) => {
-    try{
-        const token = req.cookies.jwt;
+    try {
+        const token = req.cookies?.jwt;
 
-        if(!token){
-            return res.status(401).json({ error: "Unauthorized" });
+        if (!token) {
+            return res.status(401).json({ error: "Unauthorized: No token provided" });
         }
+        console.log("decode");
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
 
-        const existingUser = await UserContainer.item(decoded.userId).read();
+        console.log(decoded);
 
-        if(!existingUser.resource){
-            return res.status(401).json({ error: "Unauthorized" });
+        // Fetch user from Cosmos DB
+        const existingUser = await UserContainer.item(decoded.userId).read();
+        console.log(existingUser);
+        console.log(existingUser.resource);
+
+        if (!existingUser.resource) {
+            return res.status(401).json({ error: "Unauthorized: User not found" });
         }
 
+        // Attach user object to the request for the controller
         req.user = existingUser.resource;
-        console.log("====DEBUG====");
-        console.log(req.user)
-        console.log("====DEBUG====END====");
         next();
-    } catch(error){
-        console.log(error);
-        return res.status(401).json({ error: "Unauthorized" });
+    } catch (error) {
+        console.error("[Auth Middleware Error]:", error);
+        return res.status(401).json({ error: "Unauthorized: Invalid or expired token" });
     }
 }

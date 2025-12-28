@@ -30,3 +30,4 @@ export const connectDB = async () => {
 };
 
 export const UserContainer = client.database(databaseName!).container("users");
+export const PreferencesContainer = client.database(databaseName!).container("preferences");
