@@ -16,10 +16,8 @@ export const protectRoute = async (req: Request, res: Response, next: NextFuncti
         console.log(decoded);
 
         // Fetch user from Cosmos DB
-        const existingUser = await UserContainer.item(decoded.userId).read();
-        console.log(existingUser);
-        console.log(existingUser.resource);
-
+        const existingUser = await UserContainer.item(decoded.userId, decoded.userId).read();
+        
         if (!existingUser.resource) {
             return res.status(401).json({ error: "Unauthorized: User not found" });
         }

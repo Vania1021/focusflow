@@ -9,7 +9,7 @@ export const getOrInitProgress = async (req: Request, res: Response) => {
   const todayDate = today();
 
   const { resource } = await ProgressContainer
-    .item(userId)
+    .item(userId, userId)
     .read<Progress>();
 
   // First-time dashboard load → create progress
