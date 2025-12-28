@@ -13,6 +13,5 @@ export const generateToken = (userId: string, res: Response) => {
 
     console.log("Token generated successfully");
     res.cookie("jwt", token, cookieOptions);
-
     return token;
 }

@@ -41,8 +41,8 @@ export const register = async (req: Request, res: Response) => {
 
         await UserContainer.items.create(newUser);
 
+        generateToken(newUser.id, res);
         res.status(201).json({ message: "User registered successfully" });
-
     } catch (error) {
         console.error(`[Auth] Error registering user: ${error}`);
         res.status(500).json({ message: "Internal server error" });
