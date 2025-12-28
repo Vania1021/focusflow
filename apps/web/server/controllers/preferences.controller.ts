@@ -47,11 +47,11 @@ export const saveUserPreferences = async (req: Request, res: Response) => {
     // Enhanced logging to capture "undefined" errors
     console.error("--- AZURE AI ERROR DEBUG ---");
     console.error("Error Object:", JSON.stringify(error, null, 2));
-    console.error("Error Message:", error?.message || "No message property");
+    console.error("Error Message:", error?.message);
     console.error("Stack Trace:", error?.stack);
     console.log("Current Endpoint:", endpoint);
     console.log("Current Deployment:", process.env.AZURE_OPENAI_DEPLOYMENT_NAME);
-    console.error("---------------------------");
+ 
 
     res.status(500).json({ 
       error: "Failed to process AI reasoning", 

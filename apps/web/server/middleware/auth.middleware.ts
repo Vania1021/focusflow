@@ -9,11 +9,16 @@ export const protectRoute = async (req: Request, res: Response, next: NextFuncti
         if (!token) {
             return res.status(401).json({ error: "Unauthorized: No token provided" });
         }
+        console.log("decode");
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
 
+        console.log(decoded);
+
         // Fetch user from Cosmos DB
-        const existingUser = await UserContainer.item(decoded.userId, decoded.userId).read();
+        const existingUser = await UserContainer.item(decoded.userId).read();
+        console.log(existingUser);
+        console.log(existingUser.resource);
 
         if (!existingUser.resource) {
             return res.status(401).json({ error: "Unauthorized: User not found" });
