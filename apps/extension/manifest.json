@@ -1,14 +1,17 @@
 {
   "manifest_version": 3,
-  "name": "NeuroSync Extension",
-  "version": "1.0.0",
-  "description": "Multilingual speech to text extension for NeuroSync",
-  "permissions": ["activeTab", "scripting"],
+  "name": "FocusFlow - Meet Translator",
+  "version": "1.0",
+  "description": "Real-time transcription and summarization for Google Meet.",
+  "permissions": ["storage", "activeTab"],
   "action": {
-    "default_popup": "index.html"
+    "default_popup": "popup.html"
   },
-  "background": {
-    "service_worker": "src/background.ts",
-    "type": "module"
-  }
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ]
 }
