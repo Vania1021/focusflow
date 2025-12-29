@@ -21,8 +21,6 @@ export const processLinkInBackground = async ({
 
     let linkBuffer: Buffer;
 
-    // Check if rawStorageRef is a blob URL or a direct webpage URL
-    // Blob URLs usually contain 'blob.core.windows.net'
     if (resource.rawStorageRef.includes("blob.core.windows.net")) {
       linkBuffer = await downloadBlobAsBuffer(resource.rawStorageRef);
       console.log(`[Link Worker] Downloaded link content from Blob for contentId: ${contentId}`);

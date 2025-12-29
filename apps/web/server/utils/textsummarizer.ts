@@ -4,10 +4,6 @@ import { Content_outputsContainer } from "../lib/db.config";
 import { summarizeText, generateBionicJSON } from "./PdfSummarizer";
 import { downloadBlobAsBuffer } from "./blobDownloadHelper";
 
-// ✅ CORRECT pdfjs import for Node 20 + ESM
-// import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
-import pdfjsLib from "pdfjs-dist/legacy/build/pdf";
-
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -19,7 +15,7 @@ const model = genAI.getGenerativeModel({
   }
 });
 
-export const processPDFInBackground = async ({
+export const processTextInBackground = async ({
   contentId,
   userId,
   initialResource,
