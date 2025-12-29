@@ -68,3 +68,27 @@ export const saveUserPreferences = async (req: Request, res: Response) => {
     });
   }
 };
+
+// Add this to the end of preferences.controller.ts
+
+export const getUserPreferences = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).json({ error: "Unauthorized" });
+
+    // Fetch preferences using the userId as the id/partition key
+    const { resource } = await PreferencesContainer.item(user.id, user.id).read();
+
+    if (!resource) {
+      return res.status(404).json({ message: "No preferences found for this user" });
+    }
+
+    res.status(200).json(resource);
+  } catch (error: any) {
+    console.error(`[Fetch Preferences Error]: ${error.message}`);
+    res.status(500).json({ 
+      error: "Failed to fetch preferences", 
+      details: error.message 
+    });
+  }
+};
