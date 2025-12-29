@@ -8,7 +8,7 @@ const Index = () => {
       {/* Header */}
       <header className="container mx-auto px-4 py-6">
         <nav className="flex items-center justify-between">
-          <h1 className="font-serif text-2xl font-bold text-gradient">StudyFlow</h1>
+          <h1 className="font-serif text-2xl font-bold text-gradient">FocusFlow</h1>
           <div className="flex items-center gap-4">
             <Link to="/auth">
               <Button variant="ghost">Sign In</Button>

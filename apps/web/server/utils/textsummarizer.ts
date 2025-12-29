@@ -4,7 +4,22 @@ import { Content_outputsContainer } from "../lib/db.config";
 import { summarizeText, generateBionicJSON } from "./PdfSummarizer";
 import { downloadBlobAsBuffer } from "./blobDownloadHelper";
 
-export const processTextInBackground = async ({
+// ✅ CORRECT pdfjs import for Node 20 + ESM
+// import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import pdfjsLib from "pdfjs-dist/legacy/build/pdf";
+
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+
+const model = genAI.getGenerativeModel({ 
+  model: "gemini-2.5-flash",
+  generationConfig: { 
+    responseMimeType: "application/json" // 🔥 forces valid JSON
+  }
+});
+
+export const processPDFInBackground = async ({
   contentId,
   userId,
   initialResource,

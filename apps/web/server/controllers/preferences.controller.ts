@@ -28,18 +28,20 @@ export const saveUserPreferences = async (req: Request, res: Response) => {
 
     console.log(`[Gemini-AI] Processing focus profile for user: ${user.id}`);
 
-    const prompt = `
-      Analyze these ADHD study habits and return a JSON object ONLY.
-      Data: ${JSON.stringify(preferencesData)}
-      Required Schema:
-      {
-        "adhdLevel": number (1-5),
-        "focusIntensity": "low" | "moderate" | "high",
-        "sensoryNeeds": string[],
-        "recommendedPomodoro": number,
-        "personalizedInsight": string
-      }
-    `;
+// Inside saveUserPreferences
+const prompt = `
+  Analyze these ADHD study habits and return a JSON object ONLY.
+  Data: ${JSON.stringify(preferencesData)}
+  AI Name: Focus Intelligence
+  Required Schema:
+  {
+    "adhdLevel": number,
+    "focusIntensity": "low" | "moderate" | "high",
+    "sensoryNeeds": string[],
+    "recommendedPomodoro": number,
+    "personalizedInsight": string[] // Must be exactly 3 bullet points, max 15 words each
+  }
+`;
 
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
@@ -67,8 +69,6 @@ export const saveUserPreferences = async (req: Request, res: Response) => {
     });
   }
 };
-
-// Add this to the end of preferences.controller.ts
 
 export const getUserPreferences = async (req: Request, res: Response) => {
   try {

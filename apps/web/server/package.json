@@ -28,7 +28,7 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
     "openai": "^6.15.0",
-    "pdfjs-dist": "^5.4.530",
+    "pdfjs-dist": "^3.11.174",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

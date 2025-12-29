@@ -5,6 +5,17 @@ export const StreakDisplay = () => {
   const { streak } = useStudyStore();
   
   const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  
+  // Safety check: if streak data is missing, render a loading skeleton
+  if (!streak || !streak.weeklyProgress) {
+    return (
+      <div className="glass-card p-6 animate-pulse">
+        <div className="h-4 w-24 bg-muted rounded mb-4"></div>
+        <div className="h-24 w-full bg-muted rounded"></div>
+      </div>
+    );
+  }
+
   const maxProgress = Math.max(...streak.weeklyProgress, 60);
   
   return (

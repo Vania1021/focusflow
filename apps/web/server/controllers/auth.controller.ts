@@ -49,8 +49,12 @@ export const register = async (req: Request, res: Response) => {
         generateToken(newUser.id, res);
 
         // Remove passwordHash before sending the user object to the frontend
-        const { passwordHash: _, ...userResponse } = newUser;
-        res.status(201).json({ user: userResponse });
+
+        const { passwordHash: _, ...userResponse } = newUser; // Security: remove hash
+        res.status(200).json({ 
+            user: userResponse, // Send the actual user data
+            message: "Registration successful" 
+        });
 
     } catch (error) {
         console.error(`[Auth] Error registering user: ${error}`);
@@ -88,8 +92,13 @@ export const login = async (req: Request, res: Response) => {
         generateToken(user.id, res);
 
         // Sanitize response and return user data for frontend state synchronization
-        const { passwordHash: _, ...userResponse } = user;
-        res.status(200).json({ user: userResponse });
+        
+        const { passwordHash: _, ...userResponse } = user; // Security: remove hash
+        res.status(200).json({ 
+            user: userResponse, // Send the actual user data
+            message: "Login successful" 
+        });
+        
 
     } catch (error) {
         console.error(`[Auth] Error logging in user: ${error}`);
