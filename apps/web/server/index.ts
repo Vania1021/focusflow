@@ -7,7 +7,7 @@ import authRoutes from "./routes/auth.route";
 import preferenceRoutes from "./routes/preferences.route";
 import contentOutputRoutes from "./routes/content_ouputs.routes";
 import storageRoutes from "./routes/storage.routes";
-
+import processingRoutes from "./routes/processing.routes";
 
 import { connectDB } from "./lib/db.config";
 // Professional polyfill to support Azure SDK in Node.js environments
@@ -40,6 +40,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/preferences", preferenceRoutes);
 app.use("/api/content-outputs", contentOutputRoutes);
 app.use("/api/storage", storageRoutes);
+app.use("/api/process", processingRoutes);
 
 
 app.get("/api/status", (req, res) => {

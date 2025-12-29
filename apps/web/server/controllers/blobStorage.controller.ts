@@ -2,7 +2,7 @@
 import { Request, Response } from "express";
 import { BlobSASPermissions } from "@azure/storage-blob";
 import { uploadToBlob, getContainerClient } from "../lib/blob.config";
-import { InputType } from "../models/Content_outputs";
+import { InputType } from "../models/content_outputs";
 
 export const uploadFile = async (req: Request, res: Response) => {
   try {

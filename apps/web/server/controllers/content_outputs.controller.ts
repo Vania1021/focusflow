@@ -5,7 +5,7 @@ import {
   InputType,
   ProcessingStatus,
   OutputFormat,
-} from "../models/Content_outputs";
+} from "../models/content_outputs";
 import { Content_outputsContainer } from "../lib/db.config";
 import { getContainerClient } from "../lib/blob.config";
 
