@@ -1,11 +1,17 @@
-/* --- 1. Bionic Reading Highlight --- */
-/* We target the <b> tags created by our script */
-b {
-    font-weight: 700;
-    color: #000; /* Ensure high contrast */
+/* --- 1. Global ADHD Optimization & Typography --- */
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap');
+
+* {
+    font-family: 'Lexend', sans-serif; /* Scientifically designed for ADHD readability */
+    box-sizing: border-box;
 }
 
-/* --- 2. Floating "Understand" Button --- */
+b {
+    font-weight: 700;
+    color: #000;
+}
+
+/* --- 2. Reading Assistant--- */
 .ff-float-btn {
     position: absolute;
     z-index: 10000;
@@ -20,7 +26,6 @@ b {
     animation: fadeIn 0.2s;
 }
 
-/* --- 3. Chat Window (Bottom Right) --- */
 .ff-chat-window {
     position: fixed;
     bottom: 20px;
@@ -33,7 +38,6 @@ b {
     z-index: 10001;
     display: flex;
     flex-direction: column;
-    font-family: sans-serif;
     border: 1px solid #eee;
     overflow: hidden;
 }
@@ -49,8 +53,11 @@ b {
 }
 
 #ff-close-chat {
-    background: none; border: none; color: white;
-    font-size: 20px; cursor: pointer;
+    background: none; 
+    border: none; 
+    color: white;
+    font-size: 20px; 
+    cursor: pointer;
 }
 
 .ff-chat-body {
@@ -60,26 +67,17 @@ b {
     background: #f9f9f9;
 }
 
-.ff-msg {
-    margin-bottom: 10px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 14px;
-    line-height: 1.5;
-    max-width: 85%;
-}
-
-.ff-msg.bot {
+.ff-chat-window .ff-msg.bot {
     background: white;
     border: 1px solid #ddd;
     align-self: flex-start;
     color: #333;
 }
 
-.ff-msg.user {
+.ff-chat-window .ff-msg.user {
     background: #e1f5fe;
     color: #01579b;
-    margin-left: auto; /* Align right */
+    margin-left: auto;
 }
 
 .ff-input-area {
@@ -105,6 +103,60 @@ b {
     padding: 0 15px;
     border-radius: 4px;
     cursor: pointer;
+}
+
+/* --- 3. Enhanced Meet Assistant (Opaque & Draggable) --- */
+.ff-dashboard {
+    background: #ffffff !important; /* Forces opacity to prevent background distractions */
+    border: 3px solid #10a37f; border-radius: 16px; display: flex;
+    flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    z-index: 2147483647; overflow: hidden; resize: both; min-width: 380px; min-height: 500px;
+}
+
+.ff-header {
+    background: #10a37f; color: white; padding: 12px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: move; /* Indicates the dashboard can be dragged */
+}
+
+.ff-tabs { display: flex; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+
+.ff-tabs button {
+    flex: 1; padding: 14px; border: none; background: none;
+    cursor: pointer; font-size: 14px; color: #64748b; font-weight: 600;
+}
+
+.ff-tabs button.active {
+    color: #10a37f; border-bottom: 4px solid #10a37f; background: #ffffff;
+}
+
+#ff-meet-body { flex: 1; padding: 20px; overflow-y: auto; line-height: 1.8; font-size: 15px; color: #1e293b; }
+
+/* Proper Chat UI Bubbles */
+#meet-chat-history {
+    flex: 1; overflow-y: auto; padding: 10px;
+    display: flex; flex-direction: column; gap: 12px;
+}
+
+.ff-msg {
+    max-width: 85%; padding: 10px 14px; border-radius: 15px; font-size: 14px; line-height: 1.5; word-wrap: break-word;
+}
+
+.ff-msg.bot {
+    background: #f1f5f9; color: #1e293b; align-self: flex-start;
+    border-bottom-left-radius: 2px; border: 1px solid #e2e8f0;
+}
+
+.ff-msg.user {
+    background: #10a37f; color: white; align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+
+/* Resize Indicator */
+.ff-dashboard::after {
+    content: ''; width: 15px; height: 15px;
+    background: linear-gradient(135deg, transparent 50%, #10a37f 50%);
+    position: absolute; right: 0; bottom: 0; cursor: nwse-resize;
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
