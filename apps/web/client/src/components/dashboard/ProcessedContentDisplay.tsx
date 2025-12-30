@@ -28,7 +28,8 @@ export const ProcessedContentDisplay = () => {
           
           try {
             // Fetch content via backend proxy to avoid CORS
-            const text = await getBlobContent("text", output.processed.blobName);
+            const response = await getBlobContent("text", output.processed.blobName);
+            const text =  response.paragraphs.flatMap((p:any) => p.sentences.map((s:any) => s.text)).join(" ");
             setProcessedText(text);
           } catch (err) {
             console.error("Failed to fetch processed content", err);
@@ -80,7 +81,7 @@ export const ProcessedContentDisplay = () => {
 
       {processedText && (
         <div className="max-h-60 overflow-y-auto p-4 bg-muted/30 rounded-lg text-sm leading-relaxed whitespace-pre-wrap font-mono">
-          {processedText}
+          <div dangerouslySetInnerHTML={{ __html: processedText }} />
         </div>
       )}
     </div>

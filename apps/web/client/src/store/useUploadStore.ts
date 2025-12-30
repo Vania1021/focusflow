@@ -15,7 +15,7 @@ interface UploadStore {
     blobName: string;
     uploadFile: (file: File, inputType: string) => Promise<{ message: string, storageRef: string, blobName: string, inputType: string }>;
     getDownloadUrl: (inputType: string, blobName?: string) => Promise<{ downloadUrl: string }>;
-    getBlobContent: (inputType: string, blobName: string) => Promise<string>;
+    getBlobContent: (inputType: string, blobName: string) => Promise<any>;
 }
 
 export const useUploadStore = create<UploadStore>((set,get) => ({
@@ -49,8 +49,6 @@ export const useUploadStore = create<UploadStore>((set,get) => ({
         const response = await axios.post(`${API_URL}/api/storage/content`, {
             inputType,
             blobName,
-        }, {
-            responseType: 'text'
         });
         return response.data;
     },
