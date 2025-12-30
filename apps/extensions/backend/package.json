@@ -6,7 +6,10 @@
     "dev": "tsx watch index.ts"
   },
   "dependencies": {
+    "@azure-rest/ai-vision-image-analysis": "^1.0.0-beta.3",
+    "@azure/core-auth": "^1.10.1",
     "@google/generative-ai": "^0.24.1",
+    "axios": "^1.13.2",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.22.1",

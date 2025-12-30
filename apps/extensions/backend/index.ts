@@ -5,19 +5,22 @@ import cors from 'cors';
 import fs from 'fs';
 import mediaRoutes from './routes/mediaRoutes';
 import chatRoutes from './routes/chatRoutes';
+import visionRoutes from './routes/visionRoutes';
 
 const app = express();
 
 
 app.use(cors()); 
-app.use(express.json());
+// app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 if (!fs.existsSync('uploads')) {
     fs.mkdirSync('uploads');
 }
 
-app.use('/media', mediaRoutes); // Handled by mediaRoutes.ts
-app.use('/chat', chatRoutes);   // Handled by chatRoutes.ts
+app.use('/media', mediaRoutes);
+app.use('/chat', chatRoutes);   
+app.use('/vision', visionRoutes);
 
 const PORT = 3000;
 app.listen(PORT, () => {
