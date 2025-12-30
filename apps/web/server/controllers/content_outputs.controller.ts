@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { Content_outputsContainer } from "../lib/db.config";
 
 export const createContentOutput = async (req: Request, res: Response) => {
+  console.log("[Content Outputs Controller] createContentOutput Triggered");
   const userId = req.user.id;
   const { inputType, rawStorageRef } = req.body;
 
@@ -23,6 +24,8 @@ export const createContentOutput = async (req: Request, res: Response) => {
     type: "CONTENT_OUTPUT",
   });
 
+  console.log("[Content Outputs Controller] Added in container");
+
   res.status(201).json({
     contentId,
     status: "UPLOADED",
@@ -30,6 +33,7 @@ export const createContentOutput = async (req: Request, res: Response) => {
 };
 
 export const getContentOutputById = async (req: Request, res: Response) => {
+  console.log("[Content Outputs Controller] getContentOutputById Triggered");
   const { contentId } = req.params;
   const userId = req.user.id;
 
@@ -39,6 +43,8 @@ export const getContentOutputById = async (req: Request, res: Response) => {
   if (!resource) {
     return res.status(404).json({ message: "Not found" });
   }
+
+  console.log("[Content Outputs Controller] getContentOutputById Success");
 
   res.json({
     contentId: resource.contentId,

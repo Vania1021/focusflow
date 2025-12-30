@@ -10,6 +10,7 @@ import { ProfileCard } from "@/components/dashboard/ProfileCard";
 import { StreakDisplay } from "@/components/dashboard/StreakDisplay";
 import { ProfileOverview } from "@/components/dashboard/ProfileOverview";
 import { ContentUpload } from "@/components/dashboard/ContentUpload";
+import { ProcessedContentDisplay } from "@/components/dashboard/ProcessedContentDisplay";
 import { ContentCard } from "@/components/dashboard/ContentCard";
 import { useAuthStore } from "@/store/useAuthStore";
 import { usePreferencesStore } from "@/store/usePreferencesStore";
@@ -146,6 +147,7 @@ const Dashboard = () => {
             {(activeTab === 'text' || activeTab === 'video' || activeTab === 'audio') && (
               <div className="animate-fade-in space-y-6">
                 <ContentUpload activeTab={activeTab} />
+                <ProcessedContentDisplay />
                 <OutputVibeSelector />
               </div>
             )}

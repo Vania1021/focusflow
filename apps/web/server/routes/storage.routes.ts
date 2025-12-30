@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { protectRoute } from "../middleware/auth.middleware";
-import { uploadFile, getDownloadUrl } from "../controllers/blobStorage.controller";
+import { uploadFile, getDownloadUrl, getBlobContent } from "../controllers/blobStorage.controller";
 import multer from "multer";
 
 const router = Router();
@@ -13,9 +13,15 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post("/upload", protectRoute, upload.single("file"), uploadFile);
 
 /**
- * GET download URL (SAS token)
- * GET /api/storage/download_url
+ * POST download URL (SAS token)
+ * POST /api/storage/download_url
  */
-router.get("/download_url", protectRoute, getDownloadUrl);
+router.post("/download_url", protectRoute, getDownloadUrl);
+
+/**
+ * POST get blob content
+ * POST /api/storage/content
+ */
+router.post("/content", protectRoute, getBlobContent);
 
 export default router;
