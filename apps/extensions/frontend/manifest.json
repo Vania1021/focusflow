@@ -19,7 +19,7 @@
     },
     {
       "matches": ["*://meet.google.com/*", "*://www.youtube.com/*", "*://www.spotify.com/*"],
-      "js": ["content/meet.js"],
+      "js": ["content/meet.js", "content/vision.js"],
       "css": ["style.css"]
     }
   ],

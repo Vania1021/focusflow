@@ -159,4 +159,31 @@ b {
     position: absolute; right: 0; bottom: 0; cursor: nwse-resize;
 }
 
+#nugget-content {
+    line-height: 2.2; /* Extra space between lines for ADHD focus */
+    padding-bottom: 50px;
+}
+
+.highlight-task {
+    background-color: #dcfce7; /* Soft Green */
+    color: #166534;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.highlight-def {
+    background-color: #fef9c3; /* Soft Yellow */
+    color: #854d0e;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.highlight-key {
+    border-bottom: 3px dashed #10a37f;
+    font-weight: 800;
+    color: #10a37f;
+}
+
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
