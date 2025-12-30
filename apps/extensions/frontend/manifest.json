@@ -18,7 +18,7 @@
       "css": ["style.css"]
     },
     {
-      "matches": ["*://meet.google.com/*", "*://www.youtube.com/*"],
+      "matches": ["*://meet.google.com/*", "*://www.youtube.com/*", "*://www.spotify.com/*"],
       "js": ["content/meet.js"],
       "css": ["style.css"]
     }
