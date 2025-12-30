@@ -30,6 +30,8 @@ export interface User {
 interface AuthStore {
   user: User | null;
   isAuthenticated: boolean;
+  isCheckingAuth: boolean;
+  checkAuth: () => Promise<boolean>;
   login: (email: string, password: string) => Promise<boolean>;
   signup: (email: string, password: string, name: string) => Promise<boolean>;
   logout: () => void;
@@ -38,7 +40,28 @@ interface AuthStore {
 export const useAuthStore = create<AuthStore>((set, get) => ({
   user: null,
   isAuthenticated: false,
+  isCheckingAuth: true,
 
+  checkAuth: async() => {
+    try {
+      const response = await axios.get(`${API_URL}/api/auth/check`);
+      console.log(response.data.user);
+      set({
+        user: response.data.user,
+        isAuthenticated: true,
+        isCheckingAuth: false,
+      });
+      return true;
+    } catch (error) {
+      console.error("Auth check failed:", error);
+      set({
+        user: null,
+        isAuthenticated: false,
+        isCheckingAuth: false
+      });
+      return false;
+    }
+  },
   login: async (email, password) => {
     try {
       const response = await axios.post(`${API_URL}/api/auth/login`, { email, password });
