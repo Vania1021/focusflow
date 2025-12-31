@@ -21,9 +21,9 @@ export const ContentUpload = ({ activeTab, onUploadComplete }: ContentUploadProp
   const { addContent } = useStudyStore();
   const { toast } = useToast();
   const { uploadFile, getDownloadUrl } = useUploadStore();
-  const { createContentOutput, triggerProcessingPDF, triggerProcessingLink, triggerProcessingText } = useContentOutputStore();
+  const { createContentOutput, triggerProcessingPDF, triggerProcessingLink, triggerProcessingText, triggerProcessingVideo } = useContentOutputStore();
 
-  // If we are on the Overview, we don't show the uploader to keep the UI clean
+    // If we are on the Overview, we don't show the uploader to keep the UI clean
   if (activeTab === 'overview') return null;
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,24 +34,54 @@ export const ContentUpload = ({ activeTab, onUploadComplete }: ContentUploadProp
     try {
       console.log("active Tab: ", activeTab);
       // ALWAYS use "text" as inputType for storage as per requirement
-      const storageInputType = "text";
+      // const storageInputType = "text";
       
+      // const uploadResult = await uploadFile(file, storageInputType);
+      
+      // // Create Content Output Record
+      // const contentId = await createContentOutput(storageInputType, uploadResult.storageRef);
+      
+      // if (contentId) {
+      //   // Trigger specific processing based on file type or context
+      //   // Assuming PDF upload implies PDF processing if it's a PDF file
+      //   if (file.type === "application/pdf") {
+      //      await triggerProcessingPDF(contentId);
+      //   } else {
+      //      // Default fallback or if specifically text file
+      //      await triggerProcessingText(contentId);
+      //   }
+      // }
+      //type 2
+
+      const isVideo = activeTab === 'video';
+
+      // Azure Storage needs simple types: "video" | "text"
+      const storageInputType = isVideo ? "video" : "text";
+      
+      // Your DB needs specific types for the AI worker: "VIDEO_LOCAL" | "text"
+      // This ensures the backend knows to use the Gemini Video worker
+      const dbInputType = isVideo ? "VIDEO_LOCAL" : "text";
+
+      // 1. Upload to Azure (using the simple type)
       const uploadResult = await uploadFile(file, storageInputType);
       
-      // Create Content Output Record
-      const contentId = await createContentOutput(storageInputType, uploadResult.storageRef);
+      // 2. Create Content Output Record (using the specific DB type)
+      const contentId = await createContentOutput(dbInputType, uploadResult.storageRef);
       
       if (contentId) {
-        // Trigger specific processing based on file type or context
-        // Assuming PDF upload implies PDF processing if it's a PDF file
-        if (file.type === "application/pdf") {
-           await triggerProcessingPDF(contentId);
+        // 3. Trigger specific processing
+        if (isVideo) {
+             // New Video Trigger
+             await triggerProcessingVideo(contentId);
+             toast({ title: "Video Processing", description: "AI is watching the video..." });
+        } 
+        else if (file.type === "application/pdf") {
+             await triggerProcessingPDF(contentId);
         } else {
-           // Default fallback or if specifically text file
-           await triggerProcessingText(contentId);
+             await triggerProcessingText(contentId);
         }
       }
-
+      
       const downloadResult = await getDownloadUrl(storageInputType);
       
       addContent({
@@ -208,9 +238,11 @@ export const ContentUpload = ({ activeTab, onUploadComplete }: ContentUploadProp
 
       {inputMethod === 'file' && (
         <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-xl cursor-pointer hover:bg-sage-50/50">
-          <input type="file" className="sr-only" onChange={handleFileUpload} disabled={isUploading} />
+          <input type="file" className="sr-only" onChange={handleFileUpload} disabled={isUploading} accept={activeTab === 'video' ? "video/mp4,video/webm" : ".pdf,.txt,.md"}/>
           {isUploading ? <Loader2 className="w-6 h-6 animate-spin text-primary" /> : <Upload className="w-6 h-6 text-muted-foreground" />}
-          <p className="text-xs mt-2 text-muted-foreground">Click to upload PDF or Text file</p>
+          <p className="text-xs mt-2 text-muted-foreground">
+             {activeTab === 'video' ? "Click to upload Video (MP4)" : "Click to upload PDF or Text file"}
+          </p>
         </label>
       )}
 

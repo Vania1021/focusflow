@@ -13,6 +13,8 @@ export interface ContentOutput {
     triggerProcessingLink: (contentId: string) => Promise<any>;
     triggerProcessingText: (contentId: string) => Promise<any>;
     getMyContentOutputs: () => Promise<any[]>;
+    triggerProcessingVideo: (contentId: string) => Promise<void>;
+
 }
 
 export const useContentOutputStore = create<ContentOutput>((set) => ({
@@ -75,5 +77,13 @@ export const useContentOutputStore = create<ContentOutput>((set) => ({
         } catch(error) {
             console.error("Error getting my content outputs:", error);
         }
+    },
+    triggerProcessingVideo: async (contentId: string) => {
+    try {
+      await axios.post(`${API_URL}/api/content/video/process/${contentId}`);
+      console.log(`[Store] Video processing triggered for ${contentId}`);
+    } catch (error) {
+      console.error("[Store] Video trigger failed", error);
     }
+  }
 }))
