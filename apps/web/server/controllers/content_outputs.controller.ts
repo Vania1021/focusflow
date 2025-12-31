@@ -4,6 +4,7 @@ import { Content_outputsContainer } from "../lib/db.config";
 
 export const createContentOutput = async (req: Request, res: Response) => {
   console.log("[Content Outputs Controller] createContentOutput Triggered");
+  console.log(req.body);
   const userId = req.user.id;
   const { inputType, rawStorageRef } = req.body;
 
