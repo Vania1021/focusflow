@@ -1,7 +1,8 @@
 import axios from "axios";
 import { uploadToBlob } from "../lib/blob.config";
-import { Content_outputsContainer } from "../lib/db.config";
+import { Content_outputsContainer, PreferencesContainer } from "../lib/db.config";
 import { downloadBlobAsBuffer } from "../utils/blobDownloadHelper";
+
 
 // ✅ CORRECT pdfjs import for Node 20 + ESM
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
@@ -19,6 +20,40 @@ const model = genAI.getGenerativeModel({
     responseMimeType: "application/json" // 🔥 forces valid JSON
   }
 });
+
+export interface PDFProcessInput {
+  contentId: string;
+  userId: string;
+  pdfBuffer: Buffer;
+  preferences: any | null;
+}
+
+const getUserPreferences = async (userId: string) => {
+  try {
+    const { resource } = await PreferencesContainer.item(userId, userId).read();
+    return resource ?? null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Chunk long text for summarization
+ */
+export const chunkText = (
+  text: string,
+  chunkSize = 3000
+): string[] => {
+  const chunks: string[] = [];
+  let start = 0;
+
+  while (start < text.length) {
+    chunks.push(text.slice(start, start + chunkSize));
+    start += chunkSize;
+  }
+
+  return chunks;
+};
 
 export const processPDFInBackground = async ({
   contentId,
@@ -39,10 +74,14 @@ export const processPDFInBackground = async ({
     );
     console.log(`[PDF Worker] Downloaded PDF content for contentId: ${contentId}`);
 
+    const preferences = await getUserPreferences(userId);
+    console.log(`[PDF Worker] Downloaded Preferences for userId: ${userId}`);
+
     await processPDFToBionic({
       contentId,
       userId,
       pdfBuffer,
+      preferences,
     });
   } catch (err: any) {
     await Content_outputsContainer
@@ -85,89 +124,59 @@ export const extractTextFromPDF = async (
   return fullText;
 };
 
-/**
- * Chunk long text for summarization
- */
-export const chunkText = (
-  text: string,
-  chunkSize = 3000
-): string[] => {
-  const chunks: string[] = [];
-  let start = 0;
-
-  while (start < text.length) {
-    chunks.push(text.slice(start, start + chunkSize));
-    start += chunkSize;
-  }
-
-  return chunks;
-};
 
 /**
  * Summarize text using Hugging Face (FREE tier compatible)
  */
 export const summarizeText = async (
-  text: string
+  text: string,
+  preferences: any
 ): Promise<string> => {
-  console.log(`[Summarizer] Summarizing with Gemini...`);
-  
   const chunks = chunkText(text);
-  const summaryPromises = chunks.map(async (chunk, index) => {
-    try {
-      console.log(`[Summarizer] Processing chunk ${index + 1}/${chunks.length}...`);
-      const response = await axios.post(
-        "https://router.huggingface.co/hf-inference/models/facebook/bart-large-cnn",
-        { inputs: chunk },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.HF_API_TOKEN}`,
-            "Content-Type": "application/json",
-          },
-          timeout: 60_000,
-        }
-      );
 
-      if (!Array.isArray(response.data)) {
-        throw new Error(
-          `Unexpected HF response: ${JSON.stringify(response.data)}`
-        );
-    }
+  const summaries = await Promise.all(
+    chunks.map(async (chunk, index) => {
+      const prompt = `
+Summarize for an ADHD learner.
 
-      return response.data[0].summary_text;
-  } catch (error: any) {
-      console.error(`[Summarizer] Error in chunk ${index + 1}:`, error.message);
-    throw error;
-  }
-  });
+Rules:
+- Keep sentences short
+- Avoid long paragraphs
+- Detail level: ${preferences?.detailLevel ?? "medium"}
+- Preferred format: ${preferences?.preferredOutput ?? "structured text"}
+- Energy level: ${preferences?.energyLevel ?? "medium"}
 
-  const summaries = await Promise.all(summaryPromises);
+TEXT:
+${chunk}
+`;
+
+      const result = await model.generateContent(prompt);
+      return JSON.parse(result.response.text()).summary ?? result.response.text();
+    })
+  );
+
   return summaries.join("\n\n");
 };
-
 /**
  * Convert summary to Bionic Reading JSON (Azure OpenAI)
  */
 export const generateBionicJSON = async (
-  summary: string
+  summary: string,
+  preferences: any
 ): Promise<any> => {
   const prompt = `
-You convert text into Bionic Reading format.
+Convert text into ADHD-friendly Bionic Reading JSON.
 
-RULES:
-- Return STRICT JSON only
-- Do NOT include markdown or explanations
-- Bold the first 40% of each word using <b></b>
-- Group output into paragraphs and sentences
-- Output must be valid JSON
+Rules:
+- Bold first 40% of each word using <b></b>
+- Keep sentences short
+- Use strong structure
+- Return STRICT JSON ONLY
 
 JSON FORMAT:
 {
   "paragraphs": [
-    {
-      "sentences": [
-        { "text": "<b>Thi</b>s is an <b>exa</b>mple." }
-      ]
-    }
+    { "sentences": [{ "text": "<b>Thi</b>s is an <b>exa</b>mple." }] }
   ]
 }
 
@@ -176,17 +185,7 @@ ${summary}
 `;
 
   const result = await model.generateContent(prompt);
-
-  const responseText = result.response.text();
-
-  if (!responseText) {
-    throw new Error("Gemini returned empty response");
-  }
-
-  // 🔐 responseMimeType ensures this is valid JSON
-  const parsed = JSON.parse(responseText);
-  console.log(`[PDF Pipeline] Generated Bionic JSON structure.`);
-  return parsed;
+  return JSON.parse(result.response.text());
 };
 
 /**
@@ -196,11 +195,10 @@ export const processPDFToBionic = async ({
   contentId,
   userId,
   pdfBuffer,
-}: {
-  contentId: string;
-  userId: string;
-  pdfBuffer: Buffer;
-}) => {
+  preferences,
+}: 
+  PDFProcessInput
+) => {
   console.time(`[PDF Pipeline] ${contentId}`);
   console.log(`[PDF Pipeline] ${new Date().toISOString()} - Processing contentId: ${contentId}`);
   try {
@@ -208,10 +206,10 @@ export const processPDFToBionic = async ({
     const rawText = await extractTextFromPDF(pdfBuffer);
 
     // 2️⃣ Summarize
-    const summary = await summarizeText(rawText);
+    const summary = await summarizeText(rawText,preferences);
 
     // 3️⃣ Generate Bionic JSON
-    const bionicJSON = await generateBionicJSON(summary);
+    const bionicJSON = await generateBionicJSON(summary,preferences);
 
     // 4️⃣ Upload processed JSON to Blob
     const processedFile = {
@@ -234,12 +232,19 @@ export const processPDFToBionic = async ({
       throw new Error("Content output not found");
     }
 
-    resource.processedStorageRef = storageRef;
-    resource.processedBlobName = blobName;
-    resource.processedContainerName = "content-processed";
-    resource.outputFormat = "BIONIC_TEXT";
-    resource.status = "READY";
-    resource.processedAt = new Date().toISOString();
+     Object.assign(resource, {
+      processedStorageRef: storageRef,
+      processedBlobName: blobName,
+      processedContainerName: "content-processed",
+      outputFormat: "BIONIC_TEXT",
+      status: "READY",
+      processedAt: new Date().toISOString(),
+      usedPreferences: {
+        detailLevel: preferences?.detailLevel,
+        preferredOutput: preferences?.preferredOutput,
+        adhdLevel: preferences?.aiEvaluation?.adhdLevel,
+      },
+    });
 
     await Content_outputsContainer
       .item(contentId, userId)
