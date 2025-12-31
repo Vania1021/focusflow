@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth.route";
 import preferenceRoutes from "./routes/preferences.route";
 import contentOutputRoutes from "./routes/content_outputs.routes";
 import storageRoutes from "./routes/storage.routes";
+import videoRoutes from "./routes/video.routes";
 //import processingRoutes from "./routes/processing.routes";
 
 import { connectDB } from "./lib/db.config";
@@ -37,6 +38,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/preferences", preferenceRoutes);
 app.use("/api/content_outputs", contentOutputRoutes);
 app.use("/api/storage", storageRoutes);
+app.use("/api/content/video", videoRoutes);
 //app.use("/api/process", processingRoutes);
 
 
