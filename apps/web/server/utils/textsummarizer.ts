@@ -1,6 +1,6 @@
 import axios from "axios";
 import { uploadToBlob } from "../lib/blob.config";
-import { Content_outputsContainer } from "../lib/db.config";
+import { Content_outputsContainer ,   PreferencesContainer} from "../lib/db.config";
 import { summarizeText, generateBionicJSON } from "./PdfSummarizer";
 import { downloadBlobAsBuffer } from "./blobDownloadHelper";
 
@@ -14,6 +14,22 @@ const model = genAI.getGenerativeModel({
     responseMimeType: "application/json" // 🔥 forces valid JSON
   }
 });
+
+export interface TextProcessInput {
+  contentId: string;
+  userId: string;
+  textBuffer: Buffer;
+  preferences: any | null;
+}
+
+const getUserPreferences = async (userId: string) => {
+  try {
+    const { resource } = await PreferencesContainer.item(userId, userId).read();
+    return resource ?? null;
+  } catch {
+    return null;
+  }
+};
 
 export const processTextInBackground = async ({
   contentId,
@@ -56,10 +72,14 @@ export const processTextInBackground = async ({
       console.log(`[Text Worker] Raw text buffer created. Size: ${textBuffer.length}`);
     }
 
+    const preferences = await getUserPreferences(userId);
+
+
     await processTextToBionic({
       contentId,
       userId,
       textBuffer,
+      preferences,
     });
   } catch (err: any) {
     console.error(`[Text Worker] FATAL ERROR in background job for ${contentId}:`, err);
@@ -76,21 +96,18 @@ export const processTextToBionic = async ({
   contentId,
   userId,
   textBuffer,
-}: {
-  contentId: string;
-  userId: string;
-  textBuffer: Buffer;
-}) => {
+  preferences,
+}: TextProcessInput) => {
   try {
 
     // Summarize
     console.time(`[Text Processing] ${contentId}`);
     console.log(`[Text] [${new Date().toISOString()}] Summarizing text...`);
-    const summary = await summarizeText(textBuffer.toString());
+    const summary = await summarizeText(textBuffer.toString(),preferences);
 
     // Generate Bionic JSON
     console.log(`[Text] [${new Date().toISOString()}] Generating Bionic JSON...`);
-    const bionicJSON = await generateBionicJSON(summary);
+    const bionicJSON = await generateBionicJSON(summary,preferences);
 
     // Upload processed JSON to Blob
     console.log(`[Text] Uploading to Blob...`);
@@ -115,12 +132,19 @@ export const processTextToBionic = async ({
       throw new Error("Content output not found");
     }
 
-    resource.processedStorageRef = storageRef;
-    resource.processedBlobName = blobName;
-    resource.processedContainerName = "content-processed";
-    resource.outputFormat = "BIONIC_TEXT";
-    resource.status = "READY";
-    resource.processedAt = new Date().toISOString();
+    Object.assign(resource, {
+      processedStorageRef: storageRef,
+      processedBlobName: blobName,
+      processedContainerName: "content-processed",
+      outputFormat: "BIONIC_TEXT",
+      status: "READY",
+      processedAt: new Date().toISOString(),
+      usedPreferences: {
+        detailLevel: preferences?.detailLevel,
+        preferredOutput: preferences?.preferredOutput,
+        adhdLevel: preferences?.aiEvaluation?.adhdLevel,
+      },
+    });
 
     await Content_outputsContainer
       .item(contentId, userId)
