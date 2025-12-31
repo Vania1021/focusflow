@@ -1,9 +1,36 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 import { uploadToBlob } from "../lib/blob.config";
-import { Content_outputsContainer } from "../lib/db.config";
+import { Content_outputsContainer, PreferencesContainer } from "../lib/db.config";
 import { summarizeText, generateBionicJSON } from "./PdfSummarizer";
 import { downloadBlobAsBuffer } from "../utils/blobDownloadHelper";
+
+
+
+/* ------------------------------------------------------------------ */
+/* 🧠 TYPES */
+/* ------------------------------------------------------------------ */
+
+export interface LinkProcessInput {
+  contentId: string;
+  userId: string;
+  linkBuffer: Buffer;
+  preferences: any | null;
+}
+
+/* ------------------------------------------------------------------ */
+/* 🧠 HELPERS */
+/* ------------------------------------------------------------------ */
+
+const getUserPreferences = async (userId: string) => {
+  try {
+    const { resource } = await PreferencesContainer.item(userId, userId).read();
+    return resource ?? null;
+  } catch {
+    return null;
+  }
+};
+
 
 export const processLinkInBackground = async ({
   contentId,
@@ -29,10 +56,13 @@ export const processLinkInBackground = async ({
       linkBuffer = Buffer.from(resource.rawStorageRef);
     }
 
+    const preferences = await getUserPreferences(userId);
+
     await processLinkToBionic({
       contentId,
       userId,
       linkBuffer,
+      preferences,
     });
   } catch (err: any) {
     await Content_outputsContainer
@@ -82,11 +112,8 @@ export const processLinkToBionic = async ({
   contentId,
   userId,
   linkBuffer,
-}: {
-  contentId: string;
-  userId: string;
-  linkBuffer: Buffer  ;
-}) => {
+  preferences,
+}: LinkProcessInput) => {
   console.time(`[Link Pipeline] ${contentId}`);
   console.log(`[Link Pipeline] ${new Date().toISOString()} - Processing contentId: ${contentId}`);
   try {
@@ -96,11 +123,11 @@ export const processLinkToBionic = async ({
 
     // 2️⃣ Summarize
     console.log(`[Link] Summarizing text...`);
-    const summary = await summarizeText(rawText);
+    const summary = await summarizeText(rawText,preferences);
 
     // 3️⃣ Generate Bionic JSON
     console.log(`[Link] Generating Bionic JSON...`);
-    const bionicJSON = await generateBionicJSON(summary);
+    const bionicJSON = await generateBionicJSON(summary,preferences);
 
     // 4️⃣ Upload processed JSON to Blob
     console.log(`[Link] Uploading to Blob...`);
@@ -125,12 +152,19 @@ export const processLinkToBionic = async ({
       throw new Error("Content output not found");
     }
 
-    resource.processedStorageRef = storageRef;
-    resource.processedBlobName = blobName;
-    resource.processedContainerName = "content-processed";
-    resource.outputFormat = "BIONIC_TEXT";
-    resource.status = "READY";
-    resource.processedAt = new Date().toISOString();
+    Object.assign(resource, {
+      processedStorageRef: storageRef,
+      processedBlobName: blobName,
+      processedContainerName: "content-processed",
+      outputFormat: "BIONIC_TEXT",
+      status: "READY",
+      processedAt: new Date().toISOString(),
+      usedPreferences: {
+        detailLevel: preferences?.detailLevel,
+        preferredOutput: preferences?.preferredOutput,
+        adhdLevel: preferences?.aiEvaluation?.adhdLevel,
+      },
+    });
 
     await Content_outputsContainer
       .item(contentId, userId)
