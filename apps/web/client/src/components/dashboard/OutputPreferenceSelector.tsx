@@ -31,6 +31,7 @@ export const OutputPreferenceSelector = () => {
 
     try {
       // 🔥 TRIGGER BACKEND
+      console.log("[OutputPreferenceSelector] Triggering processing for", currentContentId);
       if (currentInputType === "pdf") {
         await triggerProcessingPDF(currentContentId, outputStyle);
       } else if (currentInputType === "link") {

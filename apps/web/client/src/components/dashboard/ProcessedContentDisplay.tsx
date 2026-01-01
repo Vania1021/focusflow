@@ -34,8 +34,11 @@ export const ProcessedContentDisplay = () => {
     let interval: NodeJS.Timeout;
 
     const poll = async () => {
+      console.log("[ProcessedContentDisplay] Triggered")
+      console.log("[ProcessedContentDisplay] Polling for", currentContentId); 
       try {
         const output = await getContentOutputById(currentContentId);
+        console.log("[ProcessedContentDisplay] Output: ", output);
         if (!output) return;
 
         setStatus(output.status);
@@ -44,14 +47,15 @@ export const ProcessedContentDisplay = () => {
           clearInterval(interval);
 
           setOutputStyle(output.outputStyle);
-
+          
           // SUMMARY → fetch from blob
-          if (output.processedBlobName) {
+          if (output.processed.blobName) {
             const blob = await getBlobContent(
               "text",
-              output.processedBlobName
+              output.processed.blobName
             );
-            setProcessedData(blob);
+            console.log("[ProcessedContentDisplay] Blob: ", blob);
+            setProcessedData(blob.summary);
           }
           // VISUAL / FLOW / FLASHCARDS → JSON
           else if (output.processedData) {

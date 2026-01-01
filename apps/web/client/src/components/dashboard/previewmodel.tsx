@@ -11,8 +11,8 @@ export const OutputPreviewModal = ({
   onClose,
 }: OutputPreviewModalProps) => {
   return (
-    <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
-      <div className="bg-white dark:bg-stone-900 w-11/12 max-w-4xl h-5/6 p-6 rounded-xl flex flex-col">
+    <div className="fixed inset-0 flex justify-center items-center z-50">
+      <div className="bg-white w-11/12 max-w-4xl h-5/6 p-6 rounded-xl flex flex-col">
         {/* HEADER */}
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">Preview</h3>
