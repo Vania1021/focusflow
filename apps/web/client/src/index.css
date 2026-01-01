@@ -200,3 +200,18 @@
            bg-accent/10 text-accent font-medium text-sm;
   }
 }
+
+/* ************************************ */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.selection\:bg-primary\/20 ::selection {
+  background-color: hsl(var(--primary) / 0.2);
+}
