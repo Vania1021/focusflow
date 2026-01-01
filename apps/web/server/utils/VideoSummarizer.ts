@@ -5,7 +5,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager, FileState } from "@google/generative-ai/server";
 import { Content_outputsContainer } from "../lib/db.config";
 import { downloadBlobToFilePath, uploadToBlob } from "../utils/blobDownloadHelper";
-import { getUserPreferences } from "./getUserPreferences";
+import { getUserPreferences } from "../utils/getUserPreference";
 import { processTextWorker } from "./process.text.worker";
 import { OutputStyle } from "../types/textprocessing";
 
