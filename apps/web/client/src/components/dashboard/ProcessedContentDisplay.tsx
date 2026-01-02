@@ -55,7 +55,7 @@ export const ProcessedContentDisplay = () => {
               output.processed.blobName
             );
             console.log("[ProcessedContentDisplay] Blob: ", blob);
-            setProcessedData(blob.summary);
+            setProcessedData(blob);
           }
           // VISUAL / FLOW / FLASHCARDS → JSON
           else if (output.processedData) {
