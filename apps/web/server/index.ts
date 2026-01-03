@@ -9,6 +9,7 @@ import contentOutputRoutes from "./routes/content_outputs.routes";
 import storageRoutes from "./routes/storage.routes";
 import videoRoutes from "./routes/video.routes";
 import sessionRoutes from "./routes/session.route";
+import quizRoutes from "./routes/quiz.route";
 
 import { connectDB } from "./lib/db.config";
 // Professional polyfill to support Azure SDK in Node.js environments
@@ -40,7 +41,9 @@ app.use("/api/content_outputs", contentOutputRoutes);
 app.use("/api/storage", storageRoutes);
 app.use("/api/content/video", videoRoutes);
 app.use("/api/progress", progressRoutes);
+app.use("/api/content", quizRoutes);
 app.use("/api/session", sessionRoutes);
+
 
 app.get("/api/status", (req, res) => {
   res.json({ message: "Backend is reachable from Frontend", db: "Connected" });
