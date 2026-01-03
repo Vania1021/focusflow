@@ -7,9 +7,11 @@ import { useContentOutputStore } from "@/store/useContentOutput";
 import { useUploadStore } from "@/store/useUploadStore";
 import { htmlToPlainText, urlToFileName } from "@/lib/utils";
 import { contentToPlainText } from "@/store/contentforlearninghistory";
+import { useStudyStore } from "@/store/useStudyTemp";
 
 
 export const MyLearningHistory = () => {
+  const { startSession, endSession } = useStudyStore();
   const { contentOutputs, getMyContentOutputs } = useContentOutputStore();
   const { getBlobContent } = useUploadStore();
 
@@ -25,6 +27,9 @@ export const MyLearningHistory = () => {
   // ---------------- VIEW ----------------
   const handleView = async (output: any) => {
     if (output.status !== "READY" || !output.processedBlobName) return;
+
+    console.log("[Learning History] Starting session for history item");
+    await startSession(output.contentId); // Start session in backend
 
     setActiveId(output.contentId);
     setLoadingId(output.contentId);
@@ -62,7 +67,11 @@ export const MyLearningHistory = () => {
   };
 
   // ---------------- CLOSE PREVIEW ----------------
-  const closePreview = () => setIsPreviewOpen(false);
+  const closePreview = async () => {
+    console.log("[Learning History] Closing history preview");
+    await endSession(); // End session in backend
+    setIsPreviewOpen(false);
+  };
 
   return (
     <div className="bg-white dark:bg-stone-900 p-6 rounded-xl border space-y-6">

@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import axios from "axios";
+import { useFocusStore } from "./useFocusStore";
 
 export type InputType = "text" | "pdf" | "link";
 
@@ -39,11 +41,11 @@ interface StudyTempState {
   streak: StudyStreak;
   pauseSession: () => void;
   resumeSession: () => void;
-  endSession: () => void;
-  startSession: (contentId: string) => void;
+  endSession: () => Promise<void>; // Updated to Promise
+  startSession: (contentId: string) => Promise<void>; // Updated to Promise
 }
 
-export const useStudyStore = create<StudyTempState>((set) => ({
+export const useStudyStore = create<StudyTempState>((set, get) => ({
   /* ---------------- CURRENT ---------------- */
   currentSession: null,
   currentContentId: null,
@@ -54,7 +56,7 @@ export const useStudyStore = create<StudyTempState>((set) => ({
     set({
       currentContentId: id,
       currentInputType: type,
-      processingStarted: false, // reset when switching content
+      processingStarted: false, 
     }),
 
   setProcessingStarted: (value) =>
@@ -89,10 +91,70 @@ export const useStudyStore = create<StudyTempState>((set) => ({
     weeklyProgress: [0, 0, 0, 0, 0, 0, 0],
   },
 
-  pauseSession: () => {},
-  resumeSession: () => {},
-  endSession: () => {},
+  pauseSession: () => {
+    console.log("[Study Store] pauseSession Triggered");
+  },
+  
+  resumeSession: () => {
+    console.log("[Study Store] resumeSession Triggered");
+  },
 
-  startSession: (contentId) =>
-    set({ currentSession: { contentId, isActive: true } }),
+  /* ---------------- SESSION LOGIC UPDATES ---------------- */
+
+  startSession: async (contentId) => {
+    console.log(`[Study Store] startSession Triggered for contentId: ${contentId}`);
+    try {
+      // 1. Reset focus tracking for the new session
+      useFocusStore.getState().resetFocus();
+      console.log("[Study Store] focusStore reset successful");
+
+      // 2. Notify backend to create or resume a session
+      const response = await axios.post(
+        "http://localhost:3001/api/session/createOrUpdateSession", 
+        { contentId },
+        { withCredentials: true }
+      );
+
+      console.log("[Study Store] Backend createOrUpdateSession response:", response.data);
+
+      set({ 
+        currentSession: { 
+          ...response.data, 
+          isActive: true 
+        } 
+      });
+      
+    } catch (error) {
+      console.error("[Study Store] startSession Error:", error instanceof Error ? error.message : error);
+    }
+  },
+
+  endSession: async () => {
+    const { currentSession } = get();
+    if (!currentSession) {
+      console.warn("[Study Store] endSession called but no active session found");
+      return;
+    }
+
+    const finalFocusScore = useFocusStore.getState().score;
+    console.log(`[Study Store] endSession Triggered. Final Score: ${finalFocusScore}`);
+
+    try {
+      // 1. Send final focus score to backend to finalize the session record
+      const response = await axios.post(
+        "http://localhost:3001/api/session/endSession",
+        { focusScore: finalFocusScore },
+        { withCredentials: true }
+      );
+
+      console.log("[Study Store] Backend endSession response:", response.data);
+
+      // 2. Clear current session state
+      set({ currentSession: null });
+      console.log("[Study Store] currentSession cleared locally");
+
+    } catch (error) {
+      console.error("[Study Store] endSession Error:", error instanceof Error ? error.message : error);
+    }
+  },
 }));

@@ -21,6 +21,7 @@ import { SettingsView } from "@/components/dashboard/SettingsView";
 import { MyLearningHistory } from "@/components/dashboard/MyLearningHistory";
 import { useToast } from "@/hooks/use-toast";
 import { useContentOutputStore } from "@/store/useContentOutput";
+import { AIBodyDouble } from "@/components/dashboard/AIBodyDouble";
 
 
 /* ------------------------------------------------------------------ */
@@ -209,6 +210,9 @@ const Dashboard = () => {
         </> 
               )}
       </main>
+
+      {/* The AI Companion follows the user everywhere */}
+      <AIBodyDouble />
     </div>
   );
 };
