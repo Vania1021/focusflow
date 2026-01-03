@@ -2,7 +2,7 @@ import { create } from "zustand";
 import axios from "axios";
 import { useFocusStore } from "./useFocusStore";
 
-export type InputType = "text" | "pdf" | "link";
+export type InputType = "text" | "pdf" | "link" | "video";
 
 interface StudyStreak {
   currentStreak: number;

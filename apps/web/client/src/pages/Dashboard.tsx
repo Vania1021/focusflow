@@ -22,14 +22,17 @@ import { MyLearningHistory } from "@/components/dashboard/MyLearningHistory";
 import { useToast } from "@/hooks/use-toast";
 import { useContentOutputStore } from "@/store/useContentOutput";
 import { AIBodyDouble } from "@/components/dashboard/AIBodyDouble";
+import TextInputTab from "../pages/TextInputTab";
+import { ContentUploadVideo } from "@/components/dashboard/ContentUploadVideo";
+import VideoInputTab from "./VideoInputTab";
 
 
 /* ------------------------------------------------------------------ */
 /* TYPES */
 /* ------------------------------------------------------------------ */
-type OutputStyle = "summary" | "visual" | "flowchart" | "flashcards";
+export type OutputStyle = "summary" | "visual" | "flowchart" | "flashcards";
 
-const OUTPUTS: { id: OutputStyle; label: string }[] = [
+export const OUTPUTS: { id: OutputStyle; label: string }[] = [
   { id: "summary", label: "Text Summary" },
   { id: "visual", label: "Visual Diagram" },
   { id: "flowchart", label: "Flowchart" },
@@ -185,11 +188,21 @@ const Dashboard = () => {
             {activeTab === 'profile' && <ProfileOverview />}
 
             {/* Conditional Lab Components */}
-            {(activeTab === 'text' || activeTab === 'video' || activeTab === 'audio') && (
+            {(activeTab === 'text'  || activeTab === 'audio') && (
               <div className="animate-fade-in space-y-6">
                 <ContentUpload activeTab={activeTab} />
                 
-                <OutputVibeSelector />
+                <TextInputTab />
+                <ProcessedContentDisplay />
+              </div>
+            )}
+
+
+            {(activeTab === 'video') && (
+              <div className="animate-fade-in space-y-6">
+                <ContentUploadVideo />
+                
+                <VideoInputTab />
                 <ProcessedContentDisplay />
               </div>
             )}
@@ -232,61 +245,5 @@ const SidebarLink = ({ icon, label, active, onClick }) => (
     {active && <ChevronRight className="w-3 h-3" />}
   </button>
 );
-
-// New Component: Output Vibe Selector for variety
-const OutputVibeSelector = () => {
-  const {
-    currentContentId,
-    currentInputType,
-    processingStarted,
-    setProcessingStarted,
-  } = useStudyStore();
-
-  const {
-    triggerProcessingPDF,
-    triggerProcessingText,
-    triggerProcessingLink,
-  } = useContentOutputStore();
-
-  const { toast } = useToast();
-
-  const handleSelect = async (style: OutputStyle) => {
-    if (!currentContentId || !currentInputType) {
-      toast({ title: "Upload content first", variant: "destructive" });
-      return;
-    }
-
-    if (processingStarted) return;
-
-    if (currentInputType === "pdf")
-      await triggerProcessingPDF(currentContentId, style);
-    else if (currentInputType === "link")
-      await triggerProcessingLink(currentContentId, style);
-    else await triggerProcessingText(currentContentId, style);
-
-    setProcessingStarted(true);
-  };
-
-  return (
-    <div className="glass-card p-6 space-y-4">
-      <h4 className="text-xs uppercase font-bold text-muted-foreground">
-        Select Output Style
-      </h4>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {OUTPUTS.map((o) => (
-          <button
-            key={o.id}
-            onClick={() => handleSelect(o.id)}
-            disabled={!currentContentId || processingStarted}
-            className="p-3 border rounded-lg text-xs font-bold hover:bg-primary hover:text-white disabled:opacity-50"
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 export default Dashboard;
