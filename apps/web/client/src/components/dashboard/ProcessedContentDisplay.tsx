@@ -7,7 +7,7 @@ import { useUploadStore } from "@/store/useUploadStore";
 import { useStudyStore } from "@/store/useStudyTemp";
 import { contentToPlainText} from "@/store/previewAdapter";
 import { OutputPreviewModal } from "./previewmodel";
-import { detectOutputStyle } from "@/store/outputstyledetector";
+import { detectOutputStyle } from "@/store/outputStyleDetector";
 // Renderers
 import { SummaryRenderer } from "./summaryrender";
 import { VisualRenderer } from "./visualrender";
