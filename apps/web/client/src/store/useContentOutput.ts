@@ -4,7 +4,7 @@ import axios from "axios";
 const API_URL = import.meta.env.VITE_API_URL;
 axios.defaults.withCredentials = true;
 
-export type InputType = "text" | "pdf" | "link";
+export type InputType = "text" | "pdf" | "link"| "video";
 export type OutputStyle = "summary" | "visual" | "flowchart" | "flashcards";
 
 export interface ContentOutput {
@@ -15,6 +15,7 @@ export interface ContentOutput {
     triggerProcessingPDF: (contentId: string,  outputStyle: OutputStyle) => Promise<any>;
     triggerProcessingLink: (contentId: string, outputStyle: OutputStyle) => Promise<any>;
     triggerProcessingText: (contentId: string, outputStyle: OutputStyle) => Promise<any>;
+    triggerProcessingVideo: (contentId: string, outputStyle: OutputStyle) => Promise<any>;
     getMyContentOutputs: () => Promise<any[]>;
 }
 
@@ -58,6 +59,16 @@ export const useContentOutputStore = create<ContentOutput>((set) => ({
             return response.data;
         } catch (error) {
             console.error("Error triggering Link processing:", error);
+        }
+    },
+    triggerProcessingVideo: async(contentId: string, outputStyle) => {
+        try{
+            console.log("Triggering Video processing for contentId:", contentId);
+            const response = await axios.post(`${API_URL}/api/content/video/process/${contentId}`,{outputStyle});
+            console.log("Video processing triggered successfully for contentId:", contentId);
+            return response.data;
+        } catch (error) {
+            console.error("Error triggering Video processing:", error);
         }
     },
     triggerProcessingText: async(contentId: string, outputStyle) => {

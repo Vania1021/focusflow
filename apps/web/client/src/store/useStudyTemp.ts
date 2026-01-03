@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type InputType = "text" | "pdf" | "link";
+export type InputType = "text" | "pdf" | "link" | "video";
 
 interface StudyStreak {
   currentStreak: number;
