@@ -11,8 +11,7 @@ import {
   Link as LinkIcon, 
   PlayCircle,
   Hash,
-  ArrowLeft,
-  ChevronLeft
+  ArrowLeft
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 
@@ -42,21 +41,21 @@ export const MyLearningHistory = () => {
     getMyContentOutputs();
   }, [getMyContentOutputs]);
 
-  // ---------------- VIEW ----------------
+  /* BEHAVIORAL TRACKING */
+  //Tracking now activates exactly when the user is in the detail view
+  useFocusTracker(viewMode === "detail");
 
-  useFocusTracker(isPreviewOpen);
-  
-  const handleView = async (output: any) => {
-    if (output.status !== "READY" || !output.processedBlobName) return;
   const filteredOutputs = useMemo(() => {
     if (!Array.isArray(contentOutputs)) return [];
-    return contentOutputs.filter((o: any) => 
-      urlToFileName(o.rawStorageRef || "").toLowerCase().includes(searchQuery.toLowerCase())
-    ).sort((a: any, b: any) => {
-      const dateA = a.processedAt ? new Date(a.processedAt).getTime() : 0;
-      const dateB = b.processedAt ? new Date(b.processedAt).getTime() : 0;
-      return dateB - dateA;
-    });
+    return contentOutputs
+      .filter((o: any) => 
+        urlToFileName(o.rawStorageRef || "").toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .sort((a: any, b: any) => {
+        const dateA = a.processedAt ? new Date(a.processedAt).getTime() : 0;
+        const dateB = b.processedAt ? new Date(b.processedAt).getTime() : 0;
+        return dateB - dateA;
+      });
   }, [contentOutputs, searchQuery]);
 
   const fetchContent = async (output: any) => {
@@ -65,14 +64,16 @@ export const MyLearningHistory = () => {
       const response = await getBlobContent("text", output.processedBlobName);
       return contentToPlainText(response);
     } catch (err) {
-      console.error("Fetch failed", err);
+      console.error("[Learning History] Fetch failed:", err);
       return "";
     }
   };
 
   const handleView = async (output: any) => {
+    if (output.status !== "READY" || !output.processedBlobName) return;
+
     console.log("[Learning History] Starting session for history item");
-    await startSession(output.contentId); // Start session in backend
+    await startSession(output.contentId); // Notify backend session started
 
     setActiveId(output.contentId);
     setLoadingId(output.contentId);
@@ -109,9 +110,14 @@ export const MyLearningHistory = () => {
     setIsDownloadingId(null);
   };
 
+  /**
+   *  Now correctly ends the session and saves the Focus Score 
+   * to Cosmos DB when returning to the grid.
+   */
   const handleBack = async () => {
     console.log("[Learning History] Ending session and returning to grid");
-    await endSession(); // End session in backend
+    await endSession(); // Persist focus score to backend
+    
     setViewMode("grid");
     setPreviewText("");
     setActiveId(null);
@@ -138,10 +144,9 @@ export const MyLearningHistory = () => {
     const activeItem = contentOutputs.find(o => o.contentId === activeId);
     const filename = activeItem ? urlToFileName(activeItem.rawStorageRef || "") : "Summary";
 
-
     return (
       <div className="flex flex-col h-[calc(100vh-180px)] glass-card overflow-hidden animate-fade-in">
-        {/* Fixed Detail Header */}
+        {/* Detail Header */}
         <div className="flex items-center justify-between p-6 border-b border-border/50 bg-background/50 backdrop-blur-sm z-10 shrink-0">
           <div className="flex items-center gap-4">
             <Button 
@@ -156,7 +161,7 @@ export const MyLearningHistory = () => {
               <h3 className="text-xl font-bold truncate max-w-[300px]" title={filename}>
                 {filename}
               </h3>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Detail View</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Focus Session Active</p>
             </div>
           </div>
           
@@ -182,16 +187,16 @@ export const MyLearningHistory = () => {
           </div>
         </div>
 
-        {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto p-8 leading-relaxed custom-scrollbar">
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto p-8 leading-relaxed custom-scrollbar bg-white/30">
           {loadingId ? (
             <div className="flex flex-col items-center justify-center gap-4 h-full text-muted-foreground">
               <Loader2 className="w-10 h-10 animate-spin text-primary" />
-              <p className="text-sm font-medium animate-pulse">Retrieving your insights...</p>
+              <p className="text-sm font-medium animate-pulse">Analyzing history insights...</p>
             </div>
           ) : (
             <div className="max-w-4xl mx-auto py-4">
-              <div className="prose prose-stone dark:prose-invert max-w-none prose-p:leading-relaxed">
+              <div className="prose prose-stone dark:prose-invert max-w-none">
                 <div className="whitespace-pre-wrap font-sans text-foreground/90 text-lg">
                   {previewText}
                 </div>
@@ -205,46 +210,40 @@ export const MyLearningHistory = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Header & Search */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-serif font-bold text-gradient">Learning History</h2>
-          <p className="text-sm text-muted-foreground mt-1">Review and manage your processed materials</p>
+          <p className="text-sm text-muted-foreground mt-1">Review your cognitive transformations</p>
         </div>
 
         <div className="relative group max-w-md w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input 
             type="text" 
-            placeholder="Search by filename..." 
+            placeholder="Search your library..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-background hover:bg-muted/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm outline-none"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
           />
         </div>
       </div>
 
-      {/* Grid of Content */}
       {filteredOutputs.length === 0 ? (
-        <div className="glass-card p-12 text-center space-y-4 border-dashed border-2">
-          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-            <Hash className="w-8 h-8 text-muted-foreground/50" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="font-bold text-lg">No records found</h3>
-            <p className="text-muted-foreground text-sm">Upload some content to your labs to get started.</p>
-          </div>
+        <div className="glass-card p-12 text-center border-dashed border-2">
+          <Hash className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
+          <h3 className="font-bold">No records found</h3>
+          <p className="text-muted-foreground text-sm">Processed content will appear here automatically.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredOutputs.map((o: any) => (
             <div 
               key={o.contentId} 
-              className="glass-card p-6 flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+              className="glass-card p-6 flex flex-col justify-between hover:shadow-xl transition-all duration-300 group cursor-default"
             >
               <div className="space-y-4">
                 <div className="flex justify-between items-start">
-                  <div className="p-2 rounded-lg bg-background border border-border shadow-sm">
+                  <div className="p-2 rounded-lg bg-background border border-border">
                     {getTypeIcon(o.rawStorageRef)}
                   </div>
                   <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(o.status)}`}>
@@ -253,7 +252,7 @@ export const MyLearningHistory = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <h4 className="font-bold text-sm truncate group-hover:text-primary transition-colors" title={urlToFileName(o.rawStorageRef || "")}>
+                  <h4 className="font-bold text-sm truncate" title={urlToFileName(o.rawStorageRef || "")}>
                     {urlToFileName(o.rawStorageRef || "")}
                   </h4>
                   <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -268,15 +267,15 @@ export const MyLearningHistory = () => {
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="flex-1 gap-2 text-xs font-bold hover:bg-primary/5 hover:text-primary"
+                    className="flex-1 gap-2 text-xs font-bold hover:bg-primary/5"
                     onClick={() => handleView(o)}
                     disabled={isDownloadingId === o.contentId}
                   >
                     <Eye className="w-3.5 h-3.5" />
-                    View Summary
+                    Open Summary
                   </Button>
                 ) : (
-                  <div className="flex-1 flex justify-center py-2 text-[10px] font-bold text-muted-foreground bg-muted/30 rounded-lg animate-pulse">
+                  <div className="flex-1 text-center py-2 text-[10px] font-bold text-muted-foreground bg-muted/30 rounded-lg">
                     PROCESSING...
                   </div>
                 )}
@@ -285,7 +284,7 @@ export const MyLearningHistory = () => {
                    <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-9 w-9 text-muted-foreground hover:text-green-600 hover:bg-green-50"
+                    className="h-9 w-9 text-muted-foreground hover:text-green-600"
                     onClick={() => handleDownload(o)}
                     disabled={isDownloadingId === o.contentId}
                   >
