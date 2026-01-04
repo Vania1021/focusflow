@@ -9,8 +9,8 @@ import { processTextWorker } from "./process.text.worker.js";
 import { getUserPreferences } from "./getUserPreference.js";
 import { OutputStyle } from "../types/textprocessing.js";
 
-// ❗ IMPORT REMAINS UNCHANGED
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
+// ❗ IMPORT UPDATED TO .mjs FOR VERSION 5.x
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -56,10 +56,17 @@ export const extractTextFromPDF = async (
     throw new Error("Invalid or empty PDF buffer");
   }
 
+  // ✅ Disable workers (Vercel-safe)
+  PDFJS.GlobalWorkerOptions.workerSrc = undefined;
+  PDFJS.disableWorker = true;
+
   const data = new Uint8Array(pdfBuffer);
 
-  // ✅ FIXED
-  const loadingTask = PDFJS.getDocument({ data });
+  const loadingTask = PDFJS.getDocument({
+    data,
+    disableWorker: true, // extra safety
+  });
+
   const pdfDocument = await loadingTask.promise;
 
   let fullText = "";
