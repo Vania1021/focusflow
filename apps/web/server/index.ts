@@ -45,12 +45,18 @@ app.use("/api/content", quizRoutes);
 app.use("/api/session", sessionRoutes);
 
 
+app.get("/", (req, res) => {
+  res.json({ status: "ok", message: "FocusFlow API is running" });
+});
+
 app.get("/api/status", (req, res) => {
   res.json({ message: "Backend is reachable from Frontend", db: "Connected" });
 });
 
 app.listen(PORT, async () => {
-    console.log(`Server Starting : http://localhost:${PORT}`);
+    console.log("Server Starting...");
     await connectDB();
     await checkBlobConnection();
-})
+});
+
+export default app;
