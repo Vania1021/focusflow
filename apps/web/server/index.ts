@@ -1,5 +1,9 @@
 import "dotenv/config";
 import crypto from "node:crypto";
+
+if (!process.env.JWT_SECRET) {
+  console.warn("WARNING: JWT_SECRET is not defined in environment variables!");
+}
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -33,22 +37,14 @@ app.use(cookieParser());
 const allowedOrigins = [
   "http://localhost:3000", // dev
   "https://focusflow-uj1z.vercel.app", // deployed frontend
-  "https://focusflow-red-beta.vercel.app", // backend itself (sometimes needed for checks)
+  "https://focusflow-red-beta.vercel.app", 
 ];
 
 app.use(cors({
-  origin: function(origin, callback) {
-    // Allow if no origin (like mobile apps/curl) or if in whitelist or it's a vercel subdomain
-    if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
-      callback(null, true);
-    } else {
-      console.log(`[CORS] Rejected origin: ${origin}`);
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: true, // Reflect origin back for debugging
+  credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-  credentials: true
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie"]
 }));
 
 app.use(express.json());
@@ -68,6 +64,14 @@ app.get("/", (req, res) => {
 
 app.get("/api/status", (req, res) => {
   res.json({ message: "Backend is reachable from Frontend", db: "Connected" });
+});
+
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error("[Global Error Handler]:", err);
+  res.status(err.status || 500).json({
+    error: err.message || "Internal Server Error",
+    stack: process.env.NODE_ENV === "production" ? undefined : err.stack
+  });
 });
 
 app.listen(PORT, async () => {
