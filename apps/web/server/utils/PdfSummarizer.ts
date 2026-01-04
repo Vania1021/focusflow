@@ -9,15 +9,13 @@ import { processTextWorker } from "./process.text.worker.js";
 import { getUserPreferences } from "./getUserPreference.js";
 import { OutputStyle } from "../types/textprocessing.js";
 
-// ❗ IMPORT UPDATED TO .mjs FOR VERSION 5.x
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import { PDFParse } from "pdf-parse";
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 /* ------------------------------------------------------------------ */
 /* 🔧 Normalize pdfjs for ESM + Vercel (NO IMPORT CHANGE)              */
 /* ------------------------------------------------------------------ */
-const PDFJS: any = (pdfjsLib as any).default ?? pdfjsLib;
 
 /* ------------------------------------------------------------------ */
 
@@ -52,41 +50,14 @@ export const chunkText = (text: string, chunkSize = 3000): string[] => {
 export const extractTextFromPDF = async (
   pdfBuffer: Buffer
 ): Promise<string> => {
-  if (!pdfBuffer || pdfBuffer.length < 100) {
-    throw new Error("Invalid or empty PDF buffer");
+  const parser = new PDFParse({ data: pdfBuffer });
+  const { text } = await parser.getText();
+
+  if (!text || !text.trim()) {
+    throw new Error("No extractable text in PDF");
   }
 
-  // ✅ Disable workers (Vercel-safe)
-  PDFJS.GlobalWorkerOptions.workerSrc = undefined;
-  PDFJS.disableWorker = true;
-
-  const data = new Uint8Array(pdfBuffer);
-
-  const loadingTask = PDFJS.getDocument({
-    data,
-    disableWorker: true, // extra safety
-  });
-
-  const pdfDocument = await loadingTask.promise;
-
-  let fullText = "";
-
-  for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
-    const page = await pdfDocument.getPage(pageNum);
-    const textContent = await page.getTextContent();
-
-    const pageText = textContent.items
-      .map((item: any) => item.str)
-      .join(" ");
-
-    fullText += pageText + "\n";
-  }
-
-  if (!fullText.trim()) {
-    throw new Error("PDF contains no extractable text");
-  }
-
-  return fullText;
+  return text;
 };
 
 /**

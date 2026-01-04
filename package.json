@@ -16,5 +16,9 @@
   "devDependencies": {
     "@types/chrome": "^0.1.32",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "pdf-parse": "^2.4.5",
+    "pdf-text-reader": "^5.1.0"
   }
 }
