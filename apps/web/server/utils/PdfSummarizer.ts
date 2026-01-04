@@ -9,7 +9,7 @@ import { OutputStyle } from "../types/textprocessing";
 
 
 // ✅ CORRECT pdfjs import for Node 20 + ESM
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import * as pdfjs from "pdfjs-dist/legacy/build/pdf.js";
 // import pdfjsLib from "pdfjs-dist/legacy/build/pdf";
 
 
