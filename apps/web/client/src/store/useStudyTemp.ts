@@ -3,6 +3,7 @@ import axios from "axios";
 import { useFocusStore } from "./useFocusStore";
 
 const API_URL = import.meta.env.VITE_API_URL;
+axios.defaults.withCredentials = true;
 
 export type InputType = "text" | "pdf" | "link" | "video";
 
