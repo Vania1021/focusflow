@@ -3,9 +3,9 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
-import mediaRoutes from './routes/mediaRoutes';
-import chatRoutes from './routes/chatRoutes';
-import visionRoutes from './routes/visionRoutes';
+import mediaRoutes from './routes/mediaRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
+import visionRoutes from './routes/visionRoutes.js';
 
 const app = express();
 
