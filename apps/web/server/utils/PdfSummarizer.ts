@@ -10,7 +10,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 // Note: Using gemini-1.5-flash as it is stable for PDF processing
 export const geminiModel = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
+  model: "gemini-2.5-flash",
   generationConfig: {
     responseMimeType: "application/json",
     temperature: 0.3,
