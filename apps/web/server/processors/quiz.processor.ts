@@ -1,4 +1,4 @@
-import { groq, GROQ_MODEL } from "../utils/groq.client";
+import { groq, GROQ_MODEL } from "../utils/groq.client.js";
 
 export const generateMicroQuiz = async (content: string) => {
   console.log("[Quiz Processor] Generating engagement check...");
