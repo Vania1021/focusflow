@@ -3,15 +3,15 @@ import crypto from "node:crypto";
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import authRoutes from "./routes/auth.route";
-import preferenceRoutes from "./routes/preferences.route";
-import contentOutputRoutes from "./routes/content_outputs.routes";
-import storageRoutes from "./routes/storage.routes";
-import videoRoutes from "./routes/video.routes";
-import sessionRoutes from "./routes/session.route";
-import quizRoutes from "./routes/quiz.route";
+import authRoutes from "./routes/auth.route.js";
+import preferenceRoutes from "./routes/preferences.route.js";
+import contentOutputRoutes from "./routes/content_outputs.routes.js";
+import storageRoutes from "./routes/storage.routes.js";
+import videoRoutes from "./routes/video.routes.js";
+import sessionRoutes from "./routes/session.route.js";
+import quizRoutes from "./routes/quiz.route.js";
 
-import { connectDB } from "./lib/db.config";
+import { connectDB } from "./lib/db.config.js";
 // Professional polyfill to support Azure SDK in Node.js environments
 if (!globalThis.crypto) {
   // @ts-ignore
@@ -22,8 +22,8 @@ if (typeof globalThis.crypto.randomUUID !== 'function') {
   // @ts-ignore
   globalThis.crypto.randomUUID = () => crypto.randomUUID();
 }
-import progressRoutes from "./routes/progress.routes";
-import { checkBlobConnection } from "./lib/blob.config";
+import progressRoutes from "./routes/progress.routes.js";
+import { checkBlobConnection } from "./lib/blob.config.js";
 
 
 const PORT = process.env.PORT;
