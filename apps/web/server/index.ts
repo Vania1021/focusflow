@@ -33,17 +33,21 @@ app.use(cookieParser());
 const allowedOrigins = [
   "http://localhost:3000", // dev
   "https://focusflow-uj1z.vercel.app", // deployed frontend
+  "https://focusflow-red-beta.vercel.app", // backend itself (sometimes needed for checks)
 ];
 
 app.use(cors({
   origin: function(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow if no origin (like mobile apps/curl) or if in whitelist or it's a vercel subdomain
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
       callback(null, true);
     } else {
+      console.log(`[CORS] Rejected origin: ${origin}`);
       callback(new Error("Not allowed by CORS"));
     }
   },
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   credentials: true
 }));
 
