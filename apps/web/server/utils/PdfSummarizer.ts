@@ -1,19 +1,25 @@
 import axios from "axios";
 import { uploadToBlob } from "../lib/blob.config.js";
-import { Content_outputsContainer, PreferencesContainer } from "../lib/db.config.js";
+import {
+  Content_outputsContainer,
+  PreferencesContainer,
+} from "../lib/db.config.js";
 import { downloadBlobAsBuffer } from "../utils/blobDownloadHelper.js";
 import { processTextWorker } from "./process.text.worker.js";
-
 import { getUserPreferences } from "./getUserPreference.js";
 import { OutputStyle } from "../types/textprocessing.js";
 
-
-// ✅ CORRECT pdfjs import for Node 20 + ESM
+// ❗ IMPORT REMAINS UNCHANGED
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
-// import pdfjsLib from "pdfjs-dist/legacy/build/pdf";
-
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+
+/* ------------------------------------------------------------------ */
+/* 🔧 Normalize pdfjs for ESM + Vercel (NO IMPORT CHANGE)              */
+/* ------------------------------------------------------------------ */
+const PDFJS: any = (pdfjsLib as any).default ?? pdfjsLib;
+
+/* ------------------------------------------------------------------ */
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
@@ -26,12 +32,9 @@ export const geminiModel = genAI.getGenerativeModel({
 });
 
 /**
- * Chunk long text for summarization
+ * Chunk long text
  */
-export const chunkText = (
-  text: string,
-  chunkSize = 3000
-): string[] => {
+export const chunkText = (text: string, chunkSize = 3000): string[] => {
   const chunks: string[] = [];
   let start = 0;
 
@@ -43,16 +46,20 @@ export const chunkText = (
   return chunks;
 };
 
-
 /**
- * Extract text from PDF using pdfjs-dist
+ * ✅ Extract text from PDF (Node-safe, Vercel-safe)
  */
 export const extractTextFromPDF = async (
   pdfBuffer: Buffer
 ): Promise<string> => {
+  if (!pdfBuffer || pdfBuffer.length < 100) {
+    throw new Error("Invalid or empty PDF buffer");
+  }
+
   const data = new Uint8Array(pdfBuffer);
 
-  const loadingTask = pdfjsLib.getDocument({ data });
+  // ✅ FIXED
+  const loadingTask = PDFJS.getDocument({ data });
   const pdfDocument = await loadingTask.promise;
 
   let fullText = "";
@@ -75,11 +82,8 @@ export const extractTextFromPDF = async (
   return fullText;
 };
 
-
-
-
 /**
- * Convert summary to Bionic Reading JSON (Azure OpenAI)
+ * Convert summary to Bionic Reading JSON
  */
 export const generateBionicJSON = async (
   summary: string,
@@ -109,8 +113,9 @@ ${summary}
   return JSON.parse(result.response.text());
 };
 
-
-
+/**
+ * Background PDF processor
+ */
 export const processPDFInBackground = async ({
   contentId,
   userId,
@@ -125,7 +130,6 @@ export const processPDFInBackground = async ({
   try {
     let resource = initialResource;
 
-    // 1️⃣ Load DB record if not provided
     if (!resource) {
       const { resource: dbResource } =
         await Content_outputsContainer.item(contentId, userId).read();
@@ -140,24 +144,20 @@ export const processPDFInBackground = async ({
       `[PDFSummarizer] Loaded contentId=${contentId}, outputStyle=${outputStyle}`
     );
 
-    // 2️⃣ Download PDF from Blob
-  const pdfBuffer = await downloadBlobAsBuffer(resource.rawStorageRef);
+    // 1️⃣ Download PDF
+    const pdfBuffer = await downloadBlobAsBuffer(resource.rawStorageRef);
 
     console.log(
       `[PDF Worker] Downloaded PDF. Size=${pdfBuffer?.length}`
     );
 
-    if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length < 100) {
-      throw new Error("Uploaded PDF is invalid or empty");
-    }
-
-    // ✅ 3️⃣ Extract text (USE WORKING VERSION)
+    // 2️⃣ Extract text
     const extractedText = await extractTextFromPDF(pdfBuffer);
 
-    // 4️⃣ Fetch user preferences
+    // 3️⃣ Get preferences
     const preferences = await getUserPreferences(userId);
 
-    // 5️⃣ Delegate to shared worker
+    // 4️⃣ Delegate to text worker
     await processTextWorker({
       contentId,
       userId,
