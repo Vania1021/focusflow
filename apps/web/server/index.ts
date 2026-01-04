@@ -29,11 +29,24 @@ import { checkBlobConnection } from "./lib/blob.config.js";
 const PORT = process.env.PORT;
 const app = express();
 app.use(cookieParser());
+
+const allowedOrigins = [
+  "http://localhost:3000", // dev
+  "https://focusflow-uj1z.vercel.app", // deployed frontend
+];
+
 app.use(cors({
-  origin: "http://localhost:3000", // Allows your Vite frontend
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST"],
   credentials: true
 }));
+
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/preferences", preferenceRoutes);
