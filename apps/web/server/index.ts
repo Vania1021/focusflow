@@ -34,17 +34,28 @@ const PORT = process.env.PORT;
 const app = express();
 app.use(cookieParser());
 
-const allowedOrigins = [
-  "http://localhost:3000", // dev
-  "https://focusflow-uj1z.vercel.app", // deployed frontend
-  "https://focusflow-red-beta.vercel.app", 
-];
+app.options("*", cors());
 
 app.use(cors({
-  origin: true, // Reflect origin back for debugging
+  origin: function (origin, callback) {
+    // Allow non-browser tools like Postman
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
+      "http://localhost:3000",
+      "https://focusflow-uj1z.vercel.app",
+      "https://focusflow-red-beta.vercel.app",
+    ];
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "Cookie"]
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
 app.use(express.json());
