@@ -166,10 +166,7 @@ const Dashboard = () => {
           <div className="flex items-center gap-3">
     {/* PERSISTENT MOTIVATION: The live focus score */}
     <FocusScoreBadge />
-    
-    <div className="px-4 py-2 rounded-full bg-sage-50 border border-sage-200 text-xs font-bold text-sage-700">
-      {preferences?.aiEvaluation?.focusIntensity || "Syncing"} Focus Mode
-    </div>
+
   </div>
         </header>
 

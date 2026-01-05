@@ -30,6 +30,13 @@ export const ProcessedContentDisplay = () => {
 
   /* ---------------- POLLING ---------------- */
   useEffect(() => {
+    // 🔥 Reset state when contentId changes to avoid showing stale data
+    console.log("[ProcessedContentDisplay] resetting state for new contentId:", currentContentId);
+    setStatus("IDLE");
+    setErrorMessage(null);
+    setProcessedData(null);
+    setOutputStyle(null);
+
     if (!currentContentId) return;
 
     let interval: NodeJS.Timeout;
@@ -39,6 +46,8 @@ export const ProcessedContentDisplay = () => {
       try {
         const output = await getContentOutputById(currentContentId);
         if (!output) return;
+
+        console.log("[ProcessedContentDisplay] Polling for", output);
 
         setStatus(output.status);
 

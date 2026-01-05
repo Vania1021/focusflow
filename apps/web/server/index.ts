@@ -31,8 +31,8 @@ const app = express();
 app.set("trust proxy", 1);
 app.use(cookieParser());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000', 
-  methods: ["GET", "POST"],
+  origin: 'http://localhost:3000', 
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   credentials: true
 }));
 app.use(express.json());

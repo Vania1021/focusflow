@@ -103,15 +103,9 @@ export const ContentUpload = ({
     setIsUploading(true);
 
     try {
-      const blob = new Blob([linkValue], { type: "text/plain" });
-      const file = new File([blob], "link.txt", {
-        type: "text/plain",
-      });
-
-      const uploadResult = await uploadFile(file, "text");
       const contentId = await createContentOutput(
-        "text",
-        uploadResult.storageRef
+        "link",
+        linkValue
       );
 
       if (!contentId) throw new Error("Content creation failed");
@@ -120,8 +114,8 @@ export const ContentUpload = ({
         contentId,
         inputType: "link",
         title: linkValue,
-        storageRef: uploadResult.storageRef,
-        blobName: uploadResult.blobName,
+        storageRef: linkValue,
+        blobName: "link",
         status: "uploaded",
         uploadedAt: new Date().toISOString(),
       });
@@ -156,15 +150,9 @@ export const ContentUpload = ({
     setIsUploading(true);
 
     try {
-      const blob = new Blob([textValue], { type: "text/plain" });
-      const file = new File([blob], "text.txt", {
-        type: "text/plain",
-      });
-
-      const uploadResult = await uploadFile(file, "text");
       const contentId = await createContentOutput(
         "text",
-        uploadResult.storageRef
+        textValue
       );
 
       if (!contentId) throw new Error("Content creation failed");
@@ -173,8 +161,8 @@ export const ContentUpload = ({
         contentId,
         inputType: "text",
         title: "Text Input",
-        storageRef: uploadResult.storageRef,
-        blobName: uploadResult.blobName,
+        storageRef: textValue,
+        blobName: "raw_text",
         status: "uploaded",
         uploadedAt: new Date().toISOString(),
       });

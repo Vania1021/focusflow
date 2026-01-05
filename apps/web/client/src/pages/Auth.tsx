@@ -53,7 +53,7 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8 animate-fade-in">
           <Link to="/" className="inline-block">
-            <h1 className="font-serif text-3xl font-bold text-gradient mb-2">StudyFlow</h1>
+            <h1 className="font-serif text-3xl font-bold text-gradient mb-2">FocusFlow</h1>
           </Link>
           <p className="text-muted-foreground">
             {isLogin ? "Welcome back! Sign in to continue." : "Create your account to get started."}
