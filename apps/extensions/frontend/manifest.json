@@ -3,7 +3,7 @@
   "name": "FocusFlow",
   "version": "1.0.0",
   "description": "ADHD-friendly reading, explanations, and Meet assistance.",
-  "permissions": ["storage", "activeTab", "scripting", "tabCapture",
+  "permissions": ["storage", "activeTab", "tabCapture",
     "offscreen"],
   "host_permissions": ["https://focusflow-extension.onrender.com/*"],
   "background": {
